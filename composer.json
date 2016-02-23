@@ -1,0 +1,21 @@
+{
+    "name": "purrweb/yii2-paypal-recurring",
+    "description": "Purrweb PayPal requrring extension for Yii2",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension"," paypal"," purrweb"," recurring paypal"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pugachev Igor",
+            "email": "ipugachev84@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "purrweb\\": ""
+        }
+    }
+}
