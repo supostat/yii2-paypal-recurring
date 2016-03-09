@@ -7,6 +7,7 @@ use Exception;
 use Yii;
 use yii\base\Component;
 use linslin\yii2\curl;
+use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
 use yii\web\HttpException;
 
@@ -14,7 +15,7 @@ class PayPalRecurring extends Component
 {
     public $recurringParams;
 
-    public function SetExpressCheckout($user_hash = null)
+    public function SetExpressCheckout($params)
     {
         $request = [
             'USER' => $this->recurringParams['USER'],
@@ -22,23 +23,10 @@ class PayPalRecurring extends Component
             'SIGNATURE' => $this->recurringParams['SIGNATURE'],
             'METHOD' => 'SetExpressCheckout',
             'VERSION' => $this->recurringParams['VERSION'],
-            'L_BILLINGTYPE0' => 'RecurringPayments',
-            'L_BILLINGAGREEMENTDESCRIPTION0' => "Subscription to http://passgeek.com for $100 per month",
-            'cancelUrl' => $this->recurringParams['cancelUrl'],
-            'returnUrl' => $this->recurringParams['returnUrl'],
+            'L_BILLINGTYPE0' => 'RecurringPayments'
         ];
 
-        if ($user_hash) {
-            $user = User::findOne(['hash' => $user_hash]);
-            if ($user) {
-                $request['PAYMENTREQUEST_0_CUSTOM'] = $user_hash;
-                $request['L_BILLINGAGREEMENTDESCRIPTION0'] = "Subscription to http://passgeek.com for $100 per month Subscriber name: "
-                    . $user->first_name . " "
-                    . $user->last_name;
-            } else {
-                throw new HttpException(404, 'Page not found');
-            }
-        }
+        $request = ArrayHelper::merge($request, $params);
 
         $result = $this->_sendRequest($request);
 
@@ -99,13 +87,11 @@ class PayPalRecurring extends Component
         try {
             $response = $curl->setOption(CURLOPT_POSTFIELDS, http_build_query($request))
                 ->post('https://api-3t.sandbox.paypal.com/nvp');
-
             parse_str(urldecode($response), $result);
         } catch (Exception $e) {
             $result['ACK'] = 'Error';
             $result['L_SHORTMESSAGE0'] = $e->getMessage();
         }
-
         if ($result['ACK'] == 'Success') {
             return $result;
         }
